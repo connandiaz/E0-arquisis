@@ -1,0 +1,51 @@
+#https://medium.com/@christianashedrack/building-a-multi-container-web-application-day-1-docker-compose-and-database-integration-736b4afa6aed
+#https://last9.io/blog/docker-compose-health-checks/
+#https://www.qovery.com/docs/configuration/service-health-checks
+#primera vez que uso docker así que esto fue complicado
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: legitbusiness_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+
+  master:
+    build: ./master
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: legitbusiness_dev
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+
+  connector:
+    build: ./connector
+    environment:
+      master_url: http://master:3000
+      observer_url: amqps://observer.15:jfJdhsyLRt041qeYgpxZlBEs@broker.iic2173.org:5671/energy
+    networks:
+      - app-network
+      
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
