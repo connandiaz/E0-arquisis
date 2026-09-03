@@ -4,6 +4,9 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+app.context.db = db;
+
+
 const PORT = process.env.PORT || 3000;
 
 db.sequelize
