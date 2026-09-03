@@ -1,37 +1,37 @@
 const Router = require('koa-router');
-
-const router = new Router()
+const router = new Router();
 
 router.post('/events', async (ctx) => {
-    try {
-        const event = ctx.body;
+  try {
+    const event = ctx.request.body;
+    const { idpk, type, packageBody } = event || {};
 
-        if (!idpk || !type || !packageBody) {
-            ctx.status = 400;
-            ctx.body = { error: 'faltan campos obligatorios' };
-            return;
-        }
-
-        const demanda = await ctx.db.Demanda.create({
-            idpk: event.idpk,
-            type: event.type,
-            packageBody: event.packageBody,
-            receivedAt: new Date()
-        });
-        ctx.status = 201;
-        ctx.body = demanda;
-    } catch (error) {
-        ctx.status = 500;
-        ctx.body = { error: error.message };
+    if (!idpk || !type || !packageBody) {
+      ctx.status = 400;
+      ctx.body = { error: 'faltan campos obligatorios' };
+      return;
     }
+
+    const demanda = await ctx.db.Demanda.create({
+      idpk,
+      type,
+      packageBody,
+      receivedAt: new Date()
+    });
+
+    ctx.status = 201;
+    ctx.body = demanda;
+  } catch (error) {
+    ctx.status = 500;
+    ctx.body = { error: error.message };
+  }
 });
 
 router.get('/history', async (ctx) => {
   try {
-
-    //https://blog.alexrusin.com/mastering-offset-pagination-in-node-js-rest-apis/
-    
-    const page = Math.max(1, parseInt(ctx.query.page, 10)) || 1;
+    //error de NaN 
+    const rawPage = parseInt(ctx.query.page, 10);
+    const page = !isNaN(rawPage) && rawPage > 0 ? rawPage : 1;
     const limit = 25;
     const offset = (page - 1) * limit;
 
@@ -50,10 +50,11 @@ router.get('/history', async (ctx) => {
       order: [['receivedAt', 'DESC']]
     });
 
+    ctx.status = 200;
     ctx.body = {
       page,
       limit,
-      demandas: demandas
+      demandas
     };
   } catch (error) {
     ctx.status = 500;
@@ -64,7 +65,7 @@ router.get('/history', async (ctx) => {
 router.get('/history/:id', async (ctx) => {
   try {
     const id = ctx.params.id;
-    const demanda = await ctx.db.Demanda.findByPk(ctx.params.id);
+    const demanda = await ctx.db.Demanda.findByPk(id);
 
     if (!demanda) {
       ctx.status = 404;
@@ -72,22 +73,17 @@ router.get('/history/:id', async (ctx) => {
       return;
     }
 
-    ctx.status = 404;
-    ctx.body = demanda;
-    } catch (error) {
-      ctx.status = 500;
-      ctx.body = { error: error.message };
-    }
-});
-
-router.get('/health', async (ctx) => {
-  try {
     ctx.status = 200;
-    ctx.body = { status: 'sano' };
+    ctx.body = demanda;
   } catch (error) {
     ctx.status = 500;
     ctx.body = { error: error.message };
-  } 
+  }
+});
+
+router.get('/health', async (ctx) => {
+  ctx.status = 200;
+  ctx.body = { status: 'sano' };
 });
 
 module.exports = router;
