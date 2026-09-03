@@ -11,8 +11,7 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
+
     networks:
       - app-network
     healthcheck:
@@ -21,7 +20,7 @@ services:
   master:
     build: ./master
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       PORT: 3000
       DB_HOST: db
