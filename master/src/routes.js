@@ -31,7 +31,7 @@ router.get('/history', async (ctx) => {
 
     //https://blog.alexrusin.com/mastering-offset-pagination-in-node-js-rest-apis/
     
-    const page = Math.max(1, parseInt(ctx.query.page, 10));
+    const page = Math.max(1, parseInt(ctx.query.page, 10)) || 1;
     const limit = 25;
     const offset = (page - 1) * limit;
 
@@ -68,7 +68,7 @@ router.get('/history/:id', async (ctx) => {
 
     if (!demanda) {
       ctx.status = 404;
-      ctx.body = { error: error.message }
+      ctx.body = { error: 'Demanda no encontrada' };
       return;
     }
 
