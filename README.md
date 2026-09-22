@@ -11,7 +11,9 @@ $nR70d(d
 En caso que no funcione:
 sign in con root mail
 ccdiaz6@uc.cl
-clave: jYeczhinf164
+clave: c7.308cD
+
+Si piden código de confirmación estaré atento a mi celular
 
 Dominio: connandiaz.me
 api pública: http://connandiaz.me
